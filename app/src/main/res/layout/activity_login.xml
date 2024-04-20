@@ -106,6 +106,7 @@
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/etLoginEmail" />
+
         <Button
             android:id="@+id/btnLogin"
             android:layout_width="0dp"
@@ -113,9 +114,10 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="24dp"
             android:layout_marginEnd="24dp"
+            android:backgroundTint="#1679AB"
+            android:fontFamily="@font/poppins_regular"
             android:padding="13dp"
             android:text="Login"
-            android:fontFamily="@font/poppins_regular"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
