@@ -6,19 +6,20 @@ import com.ifs21024.delcomtodo.data.remote.response.DelcomResponse
 import com.ifs21024.delcomtodo.data.remote.retrofit.IApiService
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
-class TodoRepository private constructor(
+class LostRepository private constructor(
     private val apiService: IApiService,
 ) {
-    fun postTodo(
+    fun postLostfound(
         title: String,
         description: String,
+        status:String,
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
             emit(
                 MyResult.Success(
-                    apiService.postTodo(title, description).data
+                    apiService.postLostfound(title, description, status).data
                 )
             )
         } catch (e: HttpException) {
@@ -33,22 +34,24 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun putTodo(
-        todoId: Int,
+    fun putLostfound(
+        lostFoundId: Int,
         title: String,
         description: String,
-        isFinished: Boolean,
+        status: String,
+        isCompleted: Boolean,
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
             emit(
                 MyResult.Success(
-                    apiService.putTodo(
-                        todoId,
+                    apiService.putLostfound(
+                        lostFoundId,
                         title,
                         description,
-                        if (isFinished) 1 else 0
+                        status,
+                        if (isCompleted) 1 else 0
                     )
                 )
             )
@@ -64,13 +67,19 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun getTodos(
-        isFinished: Int?,
+    fun getLostfounds(
+        isCompleted: Int?,
+        userId: Int?,
+        status: String,
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
-            emit(MyResult.Success(apiService.getTodos(isFinished)))
+            emit(
+                MyResult.Success(apiService.getLostfounds(
+                isCompleted,
+                userId,
+                status,)))
         } catch (e: HttpException) {
             //get error message
             val jsonInString = e.response()?.errorBody()?.string()
@@ -83,13 +92,13 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun getTodo(
-        todoId: Int,
+    fun getLostfound(
+        lostFoundId: Int,
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
-            emit(MyResult.Success(apiService.getTodo(todoId)))
+            emit(MyResult.Success(apiService.getLostfound(lostFoundId)))
         } catch (e: HttpException) {
             //get error message
             val jsonInString = e.response()?.errorBody()?.string()
@@ -102,13 +111,13 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun deleteTodo(
-        todoId: Int,
+    fun deleteLostfound(
+        lostFoundId: Int,
     ) = flow {
         emit(MyResult.Loading)
         try {
 //get success message
-            emit(MyResult.Success(apiService.deleteTodo(todoId)))
+            emit(MyResult.Success(apiService.deleteLostfound(lostFoundId)))
         } catch (e: HttpException) {
             //get error message
             val jsonInString = e.response()?.errorBody()?.string()
@@ -123,16 +132,16 @@ class TodoRepository private constructor(
     }
     companion object {
         @Volatile
-        private var INSTANCE: TodoRepository? = null
+        private var INSTANCE: LostRepository? = null
         fun getInstance(
             apiService: IApiService,
-        ): TodoRepository {
-            synchronized(TodoRepository::class.java) {
-                INSTANCE = TodoRepository(
+        ): LostRepository {
+            synchronized(LostRepository::class.java) {
+                INSTANCE = LostRepository(
                     apiService
                 )
             }
-            return INSTANCE as TodoRepository
+            return INSTANCE as LostRepository
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.ifs21024.delcomtodo.presentation.main
+package com.ifs21024.delcomtodo.presentation.lostandfound
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,23 +11,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.ifs21024.delcomtodo.helper.Utils.Companion.observeOnce
-import com.ifs21024.delcomtodo.adapter.TodosAdapter
 import com.ifs21024.delcomtodo.R
+import com.ifs21024.delcomtodo.adapter.LosfoundAdapter
 import com.ifs21024.delcomtodo.data.remote.MyResult
-import com.ifs21024.delcomtodo.data.remote.response.DelcomTodosResponse
-import com.ifs21024.delcomtodo.data.remote.response.TodosItemResponse
-import com.ifs21024.delcomtodo.databinding.ActivityMainBinding
+import com.ifs21024.delcomtodo.data.remote.response.DelcomLostFoundsResponse
+import com.ifs21024.delcomtodo.data.remote.response.LostFoundsItemResponse
+import com.ifs21024.delcomtodo.databinding.ActivityLostfoundBinding
+import com.ifs21024.delcomtodo.helper.Utils.Companion.observeOnce
 import com.ifs21024.delcomtodo.presentation.ViewModelFactory
-import com.ifs21024.delcomtodo.presentation.login.LoginActivity
-import com.ifs21024.delcomtodo.presentation.lostandfound.LostfoundActivity
-import com.ifs21024.delcomtodo.presentation.profile.ProfileActivity
 import com.ifs21024.delcomtodo.presentation.todo.TodoDetailActivity
 import com.ifs21024.delcomtodo.presentation.todo.TodoManageActivity
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private val viewModel by viewModels<MainViewModel> {
+class LostfoundActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityLostfoundBinding
+    private val viewModel by viewModels<LostfoundViewModel> {
         ViewModelFactory.getInstance(this)
     }
     private val launcher = registerForActivityResult(
@@ -50,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityLostfoundBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupView()
         setupAction()
@@ -62,40 +59,23 @@ class MainActivity : AppCompatActivity() {
         binding.appbarMain.overflowIcon =
             ContextCompat
                 .getDrawable(this, R.drawable.ic_more_vert_24)
-        observeGetTodos()
+        observeGetTodos(null, null, "lost")
     }
     private fun setupAction() {
-        binding.appbarMain.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.mainMenuProfile -> {
-                    openProfileActivity()
-                    true
-                }
-                R.id.mainMenuLnF -> {
-                    openLFActivity()
-                    true
-                }
-                R.id.mainMenuLogout -> {
-                    viewModel.logout()
-                    openLoginActivity()
-                    true
-                }
-                else -> false
-            }
-        }
-        binding.fabMainAddTodo.setOnClickListener {
+        binding.fabMainAddLostfound.setOnClickListener {
             openAddTodoActivity()
         }
-        viewModel.getSession().observe(this) { user ->
-            if (!user.isLogin) {
-                openLoginActivity()
-            } else {
-                observeGetTodos()
-            }
-        }
     }
-    private fun observeGetTodos() {
-        viewModel.getTodos().observe(this) { result ->
+    private fun observeGetTodos(
+        isCompleted: Int?,
+        userId: Int?,
+        status: String,
+    ) {
+        viewModel.getLostfounds(
+            isCompleted,
+            userId,
+            status,
+        ).observe(this) { result ->
             if (result != null) {
                 when (result) {
                     is MyResult.Loading -> {
@@ -113,48 +93,49 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun loadTodosToLayout(response: DelcomTodosResponse) {
-        val todos = response.data.todos
+    private fun loadTodosToLayout(response: DelcomLostFoundsResponse) {
+        val lostfounds = response.data.lostFounds
         val layoutManager = LinearLayoutManager(this)
-        binding.rvMainTodos.layoutManager = layoutManager
+        binding.rvMainLostfounds.layoutManager = layoutManager
         val itemDecoration = DividerItemDecoration(
             this,
             layoutManager.orientation
         )
-        binding.rvMainTodos.addItemDecoration(itemDecoration)
-        if (todos.isEmpty()) {
+        binding.rvMainLostfounds.addItemDecoration(itemDecoration)
+        if (lostfounds.isEmpty()) {
             showEmptyError(true)
-            binding.rvMainTodos.adapter = null
+            binding.rvMainLostfounds.adapter = null
         } else {
             showComponentNotEmpty(true)
             showEmptyError(false)
-            val adapter = TodosAdapter()
-            adapter.submitOriginalList(todos)
-            binding.rvMainTodos.adapter = adapter
-            adapter.setOnItemClickCallback(object : TodosAdapter.OnItemClickCallback {
+            val adapter = LosfoundAdapter()
+            adapter.submitOriginalList(lostfounds)
+            binding.rvMainLostfounds.adapter = adapter
+            adapter.setOnItemClickCallback(object : LosfoundAdapter.OnItemClickCallback {
                 override fun onCheckedChangeListener(
-                    todo: TodosItemResponse,
+                    lostfounds: LostFoundsItemResponse,
                     isChecked: Boolean
                 ) {
                     adapter.filter(binding.svMain.query.toString())
-                    viewModel.putTodo(
-                        todo.id,
-                        todo.title,
-                        todo.description,
+                    viewModel.putLostfound(
+                        lostfounds.id,
+                        lostfounds.title,
+                        lostfounds.description,
+                        lostfounds.status,
                         isChecked
                     ).observeOnce {
                         when (it) {
                             is MyResult.Error -> {
                                 if (isChecked) {
                                     Toast.makeText(
-                                        this@MainActivity,
-                                        "Gagal menyelesaikan todo: " + todo.title,
+                                        this@LostfoundActivity,
+                                        "Gagal menyelesaikan lost and found: " + lostfounds.title,
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 } else {
                                     Toast.makeText(
-                                        this@MainActivity,
-                                        "Gagal batal menyelesaikan todo: " + todo.title,
+                                        this@LostfoundActivity,
+                                        "Gagal batal menyelesaikan lost and found: " + lostfounds.title,
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -162,14 +143,14 @@ class MainActivity : AppCompatActivity() {
                             is MyResult.Success -> {
                                 if (isChecked) {
                                     Toast.makeText(
-                                        this@MainActivity,
-                                        "Berhasil menyelesaikan todo: " + todo.title,
+                                        this@LostfoundActivity,
+                                        "Berhasil menyelesaikan lost and found: " + lostfounds.title,
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 } else {
                                     Toast.makeText(
-                                        this@MainActivity,
-                                        "Berhasil batal menyelesaikan todo: " + todo.title,
+                                        this@LostfoundActivity,
+                                        "Berhasil batal menyelesaikan lost and found: " + lostfounds.title,
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -178,12 +159,12 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-                override fun onClickDetailListener(todoId: Int) {
+                override fun onClickDetailListener(lostFoundId: Int) {
                     val intent = Intent(
-                        this@MainActivity,
-                        TodoDetailActivity::class.java
+                        this@LostfoundActivity,
+                        LostfoundDetailActivity::class.java
                     )
-                    intent.putExtra(TodoDetailActivity.KEY_TODO_ID, todoId)
+                    intent.putExtra(LostfoundDetailActivity.KEY_LOSTFOUND_ID, lostFoundId)
                     launcher.launch(intent)
                 }
             })
@@ -194,50 +175,33 @@ class MainActivity : AppCompatActivity() {
                     }
                     override fun onQueryTextChange(newText: String): Boolean {
                         adapter.filter(newText)
-                        binding.rvMainTodos.layoutManager?.scrollToPosition(0)
+                        binding.rvMainLostfounds.layoutManager?.scrollToPosition(0)
                         return true
                     }
                 })
         }
     }
     private fun showLoading(isLoading: Boolean) {
-        binding.pbMain.visibility =
+        binding.pbMainLF.visibility =
             if (isLoading) View.VISIBLE else View.GONE
-    }
-    private fun openProfileActivity() {
-        val intent = Intent(applicationContext, ProfileActivity::class.java)
-        startActivity(intent)
     }
     private fun showComponentNotEmpty(status: Boolean) {
         binding.svMain.visibility =
             if (status) View.VISIBLE else View.GONE
-        binding.rvMainTodos.visibility =
+        binding.rvMainLostfounds.visibility =
             if (status) View.VISIBLE else View.GONE
     }
     private fun showEmptyError(isError: Boolean) {
-        binding.tvMainEmptyError.visibility =
+        binding.tvMainLFEmptyError.visibility =
             if (isError) View.VISIBLE else View.GONE
     }
-    private fun openLoginActivity() {
-        val intent = Intent(applicationContext, LoginActivity::class.java)
-        intent.flags =
-            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-        finish()
-    }
+
     private fun openAddTodoActivity() {
         val intent = Intent(
-            this@MainActivity,
-            TodoManageActivity::class.java
+            this@LostfoundActivity,
+            LostfoundManageActivity::class.java
         )
-        intent.putExtra(TodoManageActivity.KEY_IS_ADD, true)
+        intent.putExtra(LostfoundManageActivity.KEY_IS_ADD, true)
         launcher.launch(intent)
-    }
-    private fun openLFActivity() {
-        val intent = Intent(applicationContext, LostfoundActivity::class.java)
-        intent.flags =
-            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-        finish()
     }
 }

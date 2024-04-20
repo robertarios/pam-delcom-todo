@@ -5,20 +5,20 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.ifs21024.delcomtodo.data.remote.response.TodosItemResponse
-import com.ifs21024.delcomtodo.databinding.ItemRowTodoBinding
+import com.ifs21024.delcomtodo.data.remote.response.LostFoundsItemResponse
+import com.ifs21024.delcomtodo.databinding.ItemRowLostfoundBinding
 
-class TodosAdapter :
-    ListAdapter<TodosItemResponse,
-            TodosAdapter.MyViewHolder>(DIFF_CALLBACK) {
+class LosfoundAdapter :
+    ListAdapter<LostFoundsItemResponse,
+            LosfoundAdapter.MyViewHolder>(DIFF_CALLBACK) {
     private lateinit var onItemClickCallback: OnItemClickCallback
-    private var originalData = mutableListOf<TodosItemResponse>()
-    private var filteredData = mutableListOf<TodosItemResponse>()
+    private var originalData = mutableListOf<LostFoundsItemResponse>()
+    private var filteredData = mutableListOf<LostFoundsItemResponse>()
     fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
         this.onItemClickCallback = onItemClickCallback
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val binding = ItemRowTodoBinding.inflate(
+        val binding = ItemRowLostfoundBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -28,28 +28,29 @@ class TodosAdapter :
     }
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val data = originalData[originalData.indexOf(getItem(position))]
-        holder.binding.cbItemTodoIsFinished.setOnCheckedChangeListener(null)
-        holder.binding.cbItemTodoIsFinished.setOnLongClickListener(null)
+        holder.binding.cbItemLFCompleted.setOnCheckedChangeListener(null)
+        holder.binding.cbItemLFCompleted.setOnLongClickListener(null)
         holder.bind(data)
-        holder.binding.cbItemTodoIsFinished.setOnCheckedChangeListener { _, isChecked ->
-            data.isFinished = if (isChecked) 1 else 0
+        holder.binding.cbItemLFCompleted.setOnCheckedChangeListener { _, isChecked ->
+            data.isCompleted = if (isChecked) 1 else 0
             holder.bind(data)
             onItemClickCallback.onCheckedChangeListener(data, isChecked)
         }
-        holder.binding.ivItemTodoDetail.setOnClickListener {
+        holder.binding.ivItemLFDetail.setOnClickListener {
             onItemClickCallback.onClickDetailListener(data.id)
         }
     }
-    class MyViewHolder(val binding: ItemRowTodoBinding) :
+    class MyViewHolder(val binding: ItemRowLostfoundBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(data: TodosItemResponse) {
+        fun bind(data: LostFoundsItemResponse) {
             binding.apply {
-                tvItemTodoTitle.text = data.title
-                cbItemTodoIsFinished.isChecked = data.isFinished == 1
+                tvItemLFTitle.text = data.title
+                bvStatus.text = data.status
+                cbItemLFCompleted.isChecked = data.isCompleted == 1
             }
         }
     }
-    fun submitOriginalList(list: List<TodosItemResponse>) {
+    fun submitOriginalList(list: List<LostFoundsItemResponse>) {
         originalData = list.toMutableList()
         filteredData = list.toMutableList()
         submitList(originalData)
@@ -65,20 +66,20 @@ class TodosAdapter :
         submitList(filteredData)
     }
     interface OnItemClickCallback {
-        fun onCheckedChangeListener(todo: TodosItemResponse, isChecked: Boolean)
-        fun onClickDetailListener(todoId: Int)
+        fun onCheckedChangeListener(lostfound: LostFoundsItemResponse, isChecked: Boolean)
+        fun onClickDetailListener(lostfoundId: Int)
     }
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TodosItemResponse>() {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<LostFoundsItemResponse>() {
             override fun areItemsTheSame(
-                oldItem: TodosItemResponse,
-                newItem: TodosItemResponse
+                oldItem: LostFoundsItemResponse,
+                newItem: LostFoundsItemResponse
             ): Boolean {
                 return oldItem.id == newItem.id
             }
             override fun areContentsTheSame(
-                oldItem: TodosItemResponse,
-                newItem: TodosItemResponse
+                oldItem: LostFoundsItemResponse,
+                newItem: LostFoundsItemResponse
             ): Boolean {
                 return oldItem == newItem
             }

@@ -1,11 +1,11 @@
-package com.ifs21024.delcomtodo.data.remote.resoponse
+package com.ifs21024.delcomtodo.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
-data class DelcomLoginResponse(
+data class DelcomUserResponse(
 
 	@field:SerializedName("data")
-	val data: DataLoginResponse,
+	val data: DataUserResponse,
 
 	@field:SerializedName("success")
 	val success: Boolean,
@@ -14,22 +14,16 @@ data class DelcomLoginResponse(
 	val message: String
 )
 
-data class DataLoginResponse(
-
-	@field:SerializedName("user")
-	val user: UserLoginResponse,
-
-	@field:SerializedName("token")
-	val token: String
-)
-
-data class UserLoginResponse(
+data class UserResponse(
 
 	@field:SerializedName("updated_at")
 	val updatedAt: String,
 
 	@field:SerializedName("name")
 	val name: String,
+
+	@field:SerializedName("photo")
+	val photo: String,
 
 	@field:SerializedName("created_at")
 	val createdAt: String,
@@ -42,4 +36,10 @@ data class UserLoginResponse(
 
 	@field:SerializedName("email")
 	val email: String
+)
+
+data class DataUserResponse(
+
+	@field:SerializedName("user")
+	val user: UserResponse
 )

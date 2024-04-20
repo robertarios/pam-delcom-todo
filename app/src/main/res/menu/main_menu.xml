@@ -6,7 +6,10 @@
             android:id="@+id/mainMenuProfile"
             android:title="Profile"
             app:showAsAction="never" />
-
+        <item
+            android:id="@+id/mainMenuLnF"
+            android:title="Lost and Found"
+            app:showAsAction="never" />
         <item
             android:id="@+id/mainMenuLogout"
             android:title="Logout"

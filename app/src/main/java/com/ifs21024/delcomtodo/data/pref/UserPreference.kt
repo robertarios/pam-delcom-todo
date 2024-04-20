@@ -12,10 +12,8 @@ import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by
 preferencesDataStore(name = "session")
-
 class UserPreference private constructor(private val dataStore:
                                          DataStore<Preferences>) {
-
     suspend fun saveSession(user: UserModel): Flow<UserModel> {
         dataStore.edit { preferences ->
             preferences[TOKEN_KEY] = user.token
@@ -23,7 +21,6 @@ class UserPreference private constructor(private val dataStore:
         }
         return getSession()
     }
-
     fun getSession(): Flow<UserModel> {
         return dataStore.data.map { preferences ->
             UserModel(
@@ -32,17 +29,14 @@ class UserPreference private constructor(private val dataStore:
             )
         }
     }
-
     suspend fun logout() {
         dataStore.edit { preferences ->
             preferences.clear()
         }
     }
-
     companion object {
         @Volatile
         private var INSTANCE: UserPreference? = null
-
         private val TOKEN_KEY = stringPreferencesKey("token")
         private val IS_LOGIN_KEY = booleanPreferencesKey("isLogin")
         fun getInstance(dataStore: DataStore<Preferences>): UserPreference {

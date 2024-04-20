@@ -1,11 +1,11 @@
-package com.ifs21024.delcomtodo.data.remote.resoponse
+package com.ifs21024.delcomtodo.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
-data class DelcomTodoResponse(
+data class DelcomTodosResponse(
 
 	@field:SerializedName("data")
-	val data: DataTodoResponse,
+	val data: DataTodosResponse,
 
 	@field:SerializedName("success")
 	val success: Boolean,
@@ -14,10 +14,10 @@ data class DelcomTodoResponse(
 	val message: String
 )
 
-data class TodoResponse(
+data class TodosItemResponse(
 
 	@field:SerializedName("cover")
-	val cover: String,
+	val cover: Any,
 
 	@field:SerializedName("updated_at")
 	val updatedAt: String,
@@ -35,11 +35,11 @@ data class TodoResponse(
 	val title: String,
 
 	@field:SerializedName("is_finished")
-	val isFinished: Int
+	var isFinished: Int
 )
 
-data class DataTodoResponse(
+data class DataTodosResponse(
 
-	@field:SerializedName("todo")
-	val todo: TodoResponse
+	@field:SerializedName("todos")
+	val todos: List<TodosItemResponse>
 )

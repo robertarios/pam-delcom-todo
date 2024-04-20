@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.ifs21024.delcomtodo.R
 import com.ifs21024.delcomtodo.data.remote.MyResult
-import com.ifs21024.delcomtodo.data.remote.resoponse.DataUserResponse
+import com.ifs21024.delcomtodo.data.remote.response.DataUserResponse
 import com.ifs21024.delcomtodo.databinding.ActivityProfileBinding
 import com.ifs21024.delcomtodo.presentation.ViewModelFactory
 import com.ifs21024.delcomtodo.presentation.login.LoginActivity
@@ -19,21 +19,17 @@ class ProfileActivity : AppCompatActivity() {
     private val viewModel by viewModels<ProfileViewModel> {
         ViewModelFactory.getInstance(this)
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         setupView()
         setupAction()
     }
-
     private fun setupView(){
         showLoading(true)
         observeGetMe()
     }
-
     private fun setupAction(){
         binding.apply {
             ivProfileBack.setOnClickListener {
@@ -41,12 +37,10 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
     }
-
     private fun showLoading(isLoading: Boolean) {
         binding.pbProfile.visibility = if (isLoading) View.VISIBLE else View.GONE
         binding.llProfile.visibility = if (isLoading) View.GONE else View.VISIBLE
     }
-
     private fun observeGetMe(){
         viewModel.getMe().observe(this){ result ->
             if (result != null) {
@@ -54,12 +48,10 @@ class ProfileActivity : AppCompatActivity() {
                     is MyResult.Loading -> {
                         showLoading(true)
                     }
-
                     is MyResult.Success -> {
                         showLoading(false)
                         loadProfileData(result.data)
                     }
-
                     is MyResult.Error -> {
                         showLoading(false)
                         Toast.makeText(
@@ -72,10 +64,8 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
     }
-
     private fun loadProfileData(profile: DataUserResponse){
         binding.apply {
-
             if(profile.user.photo != null){
                 val urlImg = "https://public-api.delcom.org/${profile.user.photo}"
                 Glide.with(this@ProfileActivity)
@@ -83,12 +73,10 @@ class ProfileActivity : AppCompatActivity() {
                     .placeholder(R.drawable.ic_person)
                     .into(ivProfile)
             }
-
             tvProfileName.text = profile.user.name
             tvProfileEmail.text = profile.user.email
         }
     }
-
     private fun openLoginActivity() {
         val intent = Intent(applicationContext, LoginActivity::class.java)
         intent.flags =

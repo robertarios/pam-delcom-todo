@@ -1,4 +1,4 @@
-package com.ifs21024.delcomtodo.presentation.todo
+package com.ifs21024.delcomtodo.presentation.lostandfound
 
 import android.content.Intent
 import android.os.Build
@@ -7,20 +7,20 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.ifs21024.delcomtodo.helper.Utils.Companion.observeOnce
-import com.ifs21024.delcomtodo.data.model.DelcomTodo
+import com.ifs21024.delcomtodo.data.model.DelcomLost
 import com.ifs21024.delcomtodo.data.remote.MyResult
-import com.ifs21024.delcomtodo.databinding.ActivityTodoManageBinding
+import com.ifs21024.delcomtodo.databinding.ActivityLostfoundManageBinding
+import com.ifs21024.delcomtodo.helper.Utils.Companion.observeOnce
 import com.ifs21024.delcomtodo.presentation.ViewModelFactory
 
-class TodoManageActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityTodoManageBinding
-    private val viewModel by viewModels<TodoViewModel> {
+class LostfoundManageActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityLostfoundManageBinding
+    private val viewModel by viewModels<LostfoundViewModel> {
         ViewModelFactory.getInstance(this)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityTodoManageBinding.inflate(layoutInflater)
+        binding = ActivityLostfoundManageBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupView()
         setupAtion()
@@ -29,37 +29,38 @@ class TodoManageActivity : AppCompatActivity() {
         showLoading(false)
     }
     private fun setupAtion() {
-        val isAddTodo = intent.getBooleanExtra(KEY_IS_ADD, true)
-        if (isAddTodo) {
+        val isAddLostfound = intent.getBooleanExtra(KEY_IS_ADD, true)
+        if (isAddLostfound) {
             manageAddTodo()
         } else {
-            val delcomTodo = when {
+            val delcomLosts = when {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                    intent.getParcelableExtra(KEY_TODO, DelcomTodo::class.java)
+                    intent.getParcelableExtra(KEY_LOST, DelcomLost::class.java)
                 }
                 else -> {
                     @Suppress("DEPRECATION")
-                    intent.getParcelableExtra<DelcomTodo>(KEY_TODO)
+                    intent.getParcelableExtra<DelcomLost>(KEY_LOST)
                 }
             }
-            if (delcomTodo == null) {
+            if (delcomLosts == null) {
                 finishAfterTransition()
                 return
             }
-            manageEditTodo(delcomTodo)
+            manageEditTodo(delcomLosts)
         }
-        binding.appbarTodoManage.setNavigationOnClickListener {
+        binding.appbarLFManage.setNavigationOnClickListener {
             finishAfterTransition()
         }
     }
     private fun manageAddTodo() {
         binding.apply {
-            appbarTodoManage.title = "Tambah Todo"
-            btnTodoManageSave.setOnClickListener {
-                val title = etTodoManageTitle.text.toString()
-                val description = etTodoManageDesc.text.toString()
+            btnLFSave.setOnClickListener {
+                val title = etLFTitle.text.toString()
+                val description = etLFDesc.text.toString()
+                val status = if (rbLost.isChecked) "lost" else "found"
+
                 if (title.isEmpty() || description.isEmpty()) {
-                    AlertDialog.Builder(this@TodoManageActivity).apply {
+                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage("Tidak boleh ada data yang kosong!")
                         setPositiveButton("Oke") { _, _ -> }
@@ -68,12 +69,13 @@ class TodoManageActivity : AppCompatActivity() {
                     }
                     return@setOnClickListener
                 }
-                observePostTodo(title, description)
+                observePostTodo(title, description, status)
             }
         }
     }
-    private fun observePostTodo(title: String, description: String) {
-        viewModel.postTodo(title, description).observeOnce { result ->
+
+    private fun observePostTodo(title: String, description: String, status: String) {
+        viewModel.postLostfound(title, description, status).observeOnce { result ->
             when (result) {
                 is MyResult.Loading -> {
                     showLoading(true)
@@ -85,7 +87,7 @@ class TodoManageActivity : AppCompatActivity() {
                     finishAfterTransition()
                 }
                 is MyResult.Error -> {
-                    AlertDialog.Builder(this@TodoManageActivity).apply {
+                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage(result.error)
                         setPositiveButton("Oke") { _, _ -> }
@@ -97,16 +99,26 @@ class TodoManageActivity : AppCompatActivity() {
             }
         }
     }
-    private fun manageEditTodo(todo: DelcomTodo) {
+    private fun manageEditTodo(lostfound: DelcomLost) {
         binding.apply {
-            appbarTodoManage.title = "Ubah Todo"
-            etTodoManageTitle.setText(todo.title)
-            etTodoManageDesc.setText(todo.description)
-            btnTodoManageSave.setOnClickListener {
-                val title = etTodoManageTitle.text.toString()
-                val description = etTodoManageDesc.text.toString()
-                if (title.isEmpty() || description.isEmpty()) {
-                    AlertDialog.Builder(this@TodoManageActivity).apply {
+            appbarLFManage.title = "Ubah Lost and Found"
+            etLFTitle.setText(lostfound.title)
+            etLFDesc.setText(lostfound.description)
+            when (lostfound.status) {
+                "lost" -> rbLost.isChecked = true
+                "found" -> rbFound.isChecked = true
+            }
+            btnLFSave.setOnClickListener {
+                val title = etLFTitle.text.toString()
+                val description = etLFDesc.text.toString()
+                val status = when {
+                    rbLost.isChecked -> "lost"
+                    rbFound.isChecked -> "found"
+                    else -> ""
+                }
+
+                if (title.isEmpty() || description.isEmpty() || status.isEmpty()) {
+                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage("Tidak boleh ada data yang kosong!")
                         setPositiveButton("Oke") { _, _ -> }
@@ -115,21 +127,25 @@ class TodoManageActivity : AppCompatActivity() {
                     }
                     return@setOnClickListener
                 }
-                observePutTodo(todo.id, title, description, todo.isFinished)
+
+                observePutTodo(lostfound.id, title, description, status, lostfound.isComplete)
             }
         }
     }
+
     private fun observePutTodo(
-        todoId: Int,
+        lostFoundId: Int,
         title: String,
         description: String,
-        isFinished: Boolean,
+        status: String,
+        isCompleted: Boolean,
     ) {
-        viewModel.putTodo(
-            todoId,
+        viewModel.putLostfound(
+            lostFoundId,
             title,
             description,
-            isFinished
+            status,
+            isCompleted
         ).observeOnce { result ->
             when (result) {
                 is MyResult.Loading -> {
@@ -142,7 +158,7 @@ class TodoManageActivity : AppCompatActivity() {
                     finishAfterTransition()
                 }
                 is MyResult.Error -> {
-                    AlertDialog.Builder(this@TodoManageActivity).apply {
+                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage(result.error)
                         setPositiveButton("Oke") { _, _ -> }
@@ -155,17 +171,17 @@ class TodoManageActivity : AppCompatActivity() {
         }
     }
     private fun showLoading(isLoading: Boolean) {
-        binding.pbTodoManage.visibility =
+        binding.pbLF.visibility =
             if (isLoading) View.VISIBLE else View.GONE
 
-        binding.btnTodoManageSave.isActivated = !isLoading
+        binding.btnLFSave.isActivated = !isLoading
 
-        binding.btnTodoManageSave.text =
+        binding.btnLFSave.text =
             if (isLoading) "" else "Simpan"
     }
     companion object {
         const val KEY_IS_ADD = "is_add"
-        const val KEY_TODO = "todo"
+        const val KEY_LOST = "lost"
         const val RESULT_CODE = 1002
     }
 }
