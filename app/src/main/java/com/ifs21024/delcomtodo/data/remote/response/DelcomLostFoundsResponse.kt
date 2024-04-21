@@ -14,15 +14,6 @@ data class DelcomLostFoundsResponse(
 	val message: String
 )
 
-data class AuthorLostFoundsResponse(
-
-	@field:SerializedName("name")
-	val name: String,
-
-	@field:SerializedName("photo")
-	val photo: Any
-)
-
 data class LostFoundsItemResponse(
 
 	@field:SerializedName("cover")
@@ -53,7 +44,16 @@ data class LostFoundsItemResponse(
     var isCompleted: Int,
 
 	@field:SerializedName("status")
-	val status: String
+	var status: String
+)
+
+data class AuthorLostFoundsResponse(
+
+	@field:SerializedName("name")
+	val name: String,
+
+	@field:SerializedName("photo")
+	val photo: Any
 )
 
 data class DataLostFoundsResponse(

@@ -6,51 +6,65 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.ifs21024.delcomtodo.data.pref.UserModel
 import com.ifs21024.delcomtodo.data.remote.MyResult
+import com.ifs21024.delcomtodo.data.remote.response.DelcomLostFoundsResponse
 import com.ifs21024.delcomtodo.data.remote.response.DelcomResponse
-import com.ifs21024.delcomtodo.data.remote.response.DelcomTodosResponse
 import com.ifs21024.delcomtodo.data.repository.AuthRepository
-import com.ifs21024.delcomtodo.data.repository.TodoRepository
+import com.ifs21024.delcomtodo.data.repository.LostFoundRepository
 import com.ifs21024.delcomtodo.presentation.ViewModelFactory
 import kotlinx.coroutines.launch
+
 class MainViewModel(
     private val authRepository: AuthRepository,
-    private val todoRepository: TodoRepository
+    private val lostfoundRepository: LostFoundRepository
 ) : ViewModel() {
+
     fun getSession(): LiveData<UserModel> {
         return authRepository.getSession().asLiveData()
     }
+
     fun logout() {
         viewModelScope.launch {
             authRepository.logout()
         }
     }
-    fun getTodos(): LiveData<MyResult<DelcomTodosResponse>> {
-        return todoRepository.getTodos(null).asLiveData()
+
+    fun getLostFound(): LiveData<MyResult<DelcomLostFoundsResponse>> {
+        return lostfoundRepository.getLostFounds(null, 1, null).asLiveData()
     }
-    fun putTodo(
-        todoId: Int,
+
+    fun getLostFounds(): LiveData<MyResult<DelcomLostFoundsResponse>> {
+        return lostfoundRepository.getLostFounds(null,0,null).asLiveData()
+    }
+
+    fun putLostFound(
+        lostandfoundId: Int,
         title: String,
         description: String,
-        isFinished: Boolean,
+        status: String,
+        isCompleted: Boolean,
     ): LiveData<MyResult<DelcomResponse>> {
-        return todoRepository.putTodo(
-            todoId,
+        return lostfoundRepository.putLostFound(
+            lostandfoundId,
             title,
             description,
-            isFinished,
+            status,
+            isCompleted,
         ).asLiveData()
     }
+
+
+
     companion object {
         @Volatile
         private var INSTANCE: MainViewModel? = null
         fun getInstance(
             authRepository: AuthRepository,
-            todoRepository: TodoRepository
+            lostfoundRepository: LostFoundRepository
         ): MainViewModel {
             synchronized(ViewModelFactory::class.java) {
                 INSTANCE = MainViewModel(
                     authRepository,
-                    todoRepository
+                    lostfoundRepository
                 )
             }
             return INSTANCE as MainViewModel

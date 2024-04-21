@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Delcom Todo"
+rootProject.name = "LostAndFound"
 include(":app")
  

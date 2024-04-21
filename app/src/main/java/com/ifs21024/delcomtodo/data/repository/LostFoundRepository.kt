@@ -6,19 +6,21 @@ import com.ifs21024.delcomtodo.data.remote.response.DelcomResponse
 import com.ifs21024.delcomtodo.data.remote.retrofit.IApiService
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
-class TodoRepository private constructor(
+
+class LostFoundRepository private constructor(
     private val apiService: IApiService,
 ) {
-    fun postTodo(
+    fun postLostFound(
         title: String,
         description: String,
+        status: String
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
             emit(
                 MyResult.Success(
-                    apiService.postTodo(title, description).data
+                    apiService.postLostFound(title, description, status).data
                 )
             )
         } catch (e: HttpException) {
@@ -33,22 +35,24 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun putTodo(
-        todoId: Int,
+    fun putLostFound(
+        lostandfoundId: Int,
         title: String,
         description: String,
-        isFinished: Boolean,
+        status: String,
+        is_completed: Boolean,
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
             emit(
                 MyResult.Success(
-                    apiService.putTodo(
-                        todoId,
+                    apiService.putLostFound(
+                        lostandfoundId,
                         title,
                         description,
-                        if (isFinished) 1 else 0
+                        status,
+                        if (is_completed) 1 else 0
                     )
                 )
             )
@@ -64,13 +68,19 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun getTodos(
-        isFinished: Int?,
+    fun getLostFounds(
+        isCompleted: Int?,
+        isMe: Int?,
+        status: String?,
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
-            emit(MyResult.Success(apiService.getTodos(isFinished)))
+            emit(
+                MyResult.Success(
+                    apiService.getLostFounds(isCompleted, isMe, status)
+                )
+            )
         } catch (e: HttpException) {
             //get error message
             val jsonInString = e.response()?.errorBody()?.string()
@@ -83,13 +93,18 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun getTodo(
-        todoId: Int,
+
+    fun getLostFound(
+        lostfoundId: Int,
     ) = flow {
         emit(MyResult.Loading)
         try {
             //get success message
-            emit(MyResult.Success(apiService.getTodo(todoId)))
+            emit(
+                MyResult.Success(
+                    apiService.getLostFound(lostfoundId)
+                )
+            )
         } catch (e: HttpException) {
             //get error message
             val jsonInString = e.response()?.errorBody()?.string()
@@ -102,13 +117,19 @@ class TodoRepository private constructor(
             )
         }
     }
-    fun deleteTodo(
-        todoId: Int,
+
+
+    fun deleteLostFound(
+        lostfoundId: Int,
     ) = flow {
         emit(MyResult.Loading)
         try {
-//get success message
-            emit(MyResult.Success(apiService.deleteTodo(todoId)))
+            //get success message
+            emit(
+                MyResult.Success(
+                    apiService.deleteLostFound(lostfoundId)
+                )
+            )
         } catch (e: HttpException) {
             //get error message
             val jsonInString = e.response()?.errorBody()?.string()
@@ -121,18 +142,19 @@ class TodoRepository private constructor(
             )
         }
     }
+
     companion object {
         @Volatile
-        private var INSTANCE: TodoRepository? = null
+        private var INSTANCE: LostFoundRepository? = null
         fun getInstance(
             apiService: IApiService,
-        ): TodoRepository {
-            synchronized(TodoRepository::class.java) {
-                INSTANCE = TodoRepository(
+        ): LostFoundRepository {
+            synchronized(LostFoundRepository::class.java) {
+                INSTANCE = LostFoundRepository(
                     apiService
                 )
             }
-            return INSTANCE as TodoRepository
+            return INSTANCE as LostFoundRepository
         }
     }
 }

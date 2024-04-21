@@ -1,66 +1,77 @@
-package com.ifs21024.delcomtodo.presentation.lostandfound
+package com.ifs21024.delcomtodo.presentation.lostfound
 
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.ifs21024.delcomtodo.data.model.DelcomLost
+import com.ifs21024.delcomtodo.R
+import com.ifs21024.delcomtodo.data.model.DelcomLostFound
 import com.ifs21024.delcomtodo.data.remote.MyResult
-import com.ifs21024.delcomtodo.databinding.ActivityLostfoundManageBinding
+import com.ifs21024.delcomtodo.databinding.ActivityLostFoundManageBinding
 import com.ifs21024.delcomtodo.helper.Utils.Companion.observeOnce
 import com.ifs21024.delcomtodo.presentation.ViewModelFactory
 
-class LostfoundManageActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityLostfoundManageBinding
-    private val viewModel by viewModels<LostfoundViewModel> {
+class LostFoundManageActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityLostFoundManageBinding
+    private val viewModel by viewModels<LostFoundViewModel> {
         ViewModelFactory.getInstance(this)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLostfoundManageBinding.inflate(layoutInflater)
+        binding = ActivityLostFoundManageBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupView()
+
         setupAtion()
     }
-    private fun setupView() {
-        showLoading(false)
-    }
+
+
+
     private fun setupAtion() {
-        val isAddLostfound = intent.getBooleanExtra(KEY_IS_ADD, true)
-        if (isAddLostfound) {
-            manageAddTodo()
+        val isAddLostFound = intent.getBooleanExtra(KEY_IS_ADD, true)
+        if (isAddLostFound) {
+            manageAddLostFound()
         } else {
-            val delcomLosts = when {
+
+            val delcomLostFound = when {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                    intent.getParcelableExtra(KEY_LOST, DelcomLost::class.java)
+                    intent.getParcelableExtra(KEY_LOSTFOUND, DelcomLostFound::class.java)
                 }
+
                 else -> {
                     @Suppress("DEPRECATION")
-                    intent.getParcelableExtra<DelcomLost>(KEY_LOST)
+                    intent.getParcelableExtra<DelcomLostFound>(KEY_LOSTFOUND)
                 }
             }
-            if (delcomLosts == null) {
+
+            if (delcomLostFound == null) {
                 finishAfterTransition()
                 return
             }
-            manageEditTodo(delcomLosts)
+
+            manageEditLostFound(delcomLostFound)
         }
-        binding.appbarLFManage.setNavigationOnClickListener {
+
+        binding.appbarLostFoundManage.setNavigationOnClickListener {
             finishAfterTransition()
         }
     }
-    private fun manageAddTodo() {
-        binding.apply {
-            btnLFSave.setOnClickListener {
-                val title = etLFTitle.text.toString()
-                val description = etLFDesc.text.toString()
-                val status = if (rbLost.isChecked) "lost" else "found"
 
-                if (title.isEmpty() || description.isEmpty()) {
-                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
+    private fun manageAddLostFound() {
+        binding.apply {
+            appbarLostFoundManage.title = "Tambah Barang Temuan"
+
+            btnLostFoundManageSave.setOnClickListener {
+                val title = etLostFoundManageTitle.text.toString()
+                val description = etLostFoundManageDesc.text.toString()
+                val status = etLostFoundManageStatus.selectedItem.toString()
+
+                if (title.isEmpty() || description.isEmpty() || status.isEmpty()) {
+                    AlertDialog.Builder(this@LostFoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage("Tidak boleh ada data yang kosong!")
                         setPositiveButton("Oke") { _, _ -> }
@@ -69,25 +80,29 @@ class LostfoundManageActivity : AppCompatActivity() {
                     }
                     return@setOnClickListener
                 }
-                observePostTodo(title, description, status)
+
+                observePostLostFound(title, description, status)
             }
         }
     }
 
-    private fun observePostTodo(title: String, description: String, status: String) {
-        viewModel.postLostfound(title, description, status).observeOnce { result ->
+    private fun observePostLostFound(title: String, description: String, status: String) {
+        viewModel.postLostFound(title, description, status).observeOnce { result ->
             when (result) {
                 is MyResult.Loading -> {
                     showLoading(true)
                 }
+
                 is MyResult.Success -> {
                     showLoading(false)
+
                     val resultIntent = Intent()
                     setResult(RESULT_CODE, resultIntent)
                     finishAfterTransition()
                 }
+
                 is MyResult.Error -> {
-                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
+                    AlertDialog.Builder(this@LostFoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage(result.error)
                         setPositiveButton("Oke") { _, _ -> }
@@ -99,26 +114,26 @@ class LostfoundManageActivity : AppCompatActivity() {
             }
         }
     }
-    private fun manageEditTodo(lostfound: DelcomLost) {
-        binding.apply {
-            appbarLFManage.title = "Ubah Lost and Found"
-            etLFTitle.setText(lostfound.title)
-            etLFDesc.setText(lostfound.description)
-            when (lostfound.status) {
-                "lost" -> rbLost.isChecked = true
-                "found" -> rbFound.isChecked = true
-            }
-            btnLFSave.setOnClickListener {
-                val title = etLFTitle.text.toString()
-                val description = etLFDesc.text.toString()
-                val status = when {
-                    rbLost.isChecked -> "lost"
-                    rbFound.isChecked -> "found"
-                    else -> ""
-                }
 
-                if (title.isEmpty() || description.isEmpty() || status.isEmpty()) {
-                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
+
+    private fun manageEditLostFound(lostfound: DelcomLostFound) {
+        binding.apply {
+            appbarLostFoundManage.title = "Ubah Barang Temuan"
+
+            etLostFoundManageTitle.setText(lostfound.title)
+            etLostFoundManageDesc.setText(lostfound.description)
+
+            val statusArray = resources.getStringArray(R.array.status)
+            val statusIndex = statusArray.indexOf(lostfound.status)
+            etLostFoundManageStatus.setSelection(statusIndex)
+
+            btnLostFoundManageSave.setOnClickListener {
+                val title = etLostFoundManageTitle.text.toString()
+                val description = etLostFoundManageDesc.text.toString()
+                val status = etLostFoundManageStatus.selectedItem.toString()
+
+                if (title.isEmpty() || description.isEmpty()) {
+                    AlertDialog.Builder(this@LostFoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage("Tidak boleh ada data yang kosong!")
                         setPositiveButton("Oke") { _, _ -> }
@@ -128,20 +143,20 @@ class LostfoundManageActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
 
-                observePutTodo(lostfound.id, title, description, status, lostfound.isComplete)
+                observePutLostFound(lostfound.id, title, description, status, lostfound.iscompleted)
             }
         }
     }
 
-    private fun observePutTodo(
-        lostFoundId: Int,
+    private fun observePutLostFound(
+        lostfoundId: Int,
         title: String,
         description: String,
         status: String,
         isCompleted: Boolean,
     ) {
-        viewModel.putLostfound(
-            lostFoundId,
+        viewModel.putLostFound(
+            lostfoundId,
             title,
             description,
             status,
@@ -151,14 +166,16 @@ class LostfoundManageActivity : AppCompatActivity() {
                 is MyResult.Loading -> {
                     showLoading(true)
                 }
+
                 is MyResult.Success -> {
                     showLoading(false)
                     val resultIntent = Intent()
                     setResult(RESULT_CODE, resultIntent)
                     finishAfterTransition()
                 }
+
                 is MyResult.Error -> {
-                    AlertDialog.Builder(this@LostfoundManageActivity).apply {
+                    AlertDialog.Builder(this@LostFoundManageActivity).apply {
                         setTitle("Oh No!")
                         setMessage(result.error)
                         setPositiveButton("Oke") { _, _ -> }
@@ -170,18 +187,20 @@ class LostfoundManageActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun showLoading(isLoading: Boolean) {
-        binding.pbLF.visibility =
+        binding.pbLostFoundManage.visibility =
             if (isLoading) View.VISIBLE else View.GONE
 
-        binding.btnLFSave.isActivated = !isLoading
+        binding.btnLostFoundManageSave.isActivated = !isLoading
 
-        binding.btnLFSave.text =
+        binding.btnLostFoundManageSave.text =
             if (isLoading) "" else "Simpan"
     }
+
     companion object {
         const val KEY_IS_ADD = "is_add"
-        const val KEY_LOST = "lost"
+        const val KEY_LOSTFOUND = "lostfound"
         const val RESULT_CODE = 1002
     }
 }
