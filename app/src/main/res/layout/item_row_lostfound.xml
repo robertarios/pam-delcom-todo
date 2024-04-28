@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_margin="10dp"
     android:layout_marginBottom="15dp"
-    android:backgroundTint="#F3F3F3">
+    android:backgroundTint="#F3F3F3"
+    tools:context=".presentation.lostfound.ItemRowLostFoundBinding">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
