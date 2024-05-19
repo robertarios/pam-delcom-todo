@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.ifs21024.lostfound.R
 import com.ifs21024.lostfound.data.local.entity.DelcomLostFoundEntity
@@ -224,12 +225,12 @@ class LostFoundDetailActivity : AppCompatActivity() {
                     builder.setTitle("Konfirmasi Hapus data lost and found")
                         .setMessage("Anda yakin ingin menghapus data lost and found ini?")
 
-                    // Menambahkan tombol "Ya" dengan warna hijau
+                    // Menambahkan tombol "Ya"
                     builder.setPositiveButton("Ya") { _, _ ->
                         observeDeleteLostFound(lostfound.id)
                     }
 
-                    // Menambahkan tombol "Tidak" dengan warna merah
+                    // Menambahkan tombol "Tidak"
                     builder.setNegativeButton("Tidak") { dialog, _ ->
                         dialog.dismiss() // Menutup dialog
                     }
@@ -238,10 +239,25 @@ class LostFoundDetailActivity : AppCompatActivity() {
                     val dialog = builder.create()
                     dialog.show()
 
-                    // Membuat kustomisasi warna teks pada tombol
+                    // Membuat kustomisasi warna teks pada tombol setelah dialog ditampilkan
                     val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
                     val negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+
+                    // Periksa apakah tombol berhasil diambil
+                    if (positiveButton != null) {
+                        // Mengubah warna teks tombol "Ya" menjadi hijau
+                        positiveButton.setTextColor(ContextCompat.getColor(this@LostFoundDetailActivity, R.color.green))
+                    }
+
+                    if (negativeButton != null) {
+                        // Mengubah warna teks tombol "Tidak" menjadi merah
+                        negativeButton.setTextColor(ContextCompat.getColor(this@LostFoundDetailActivity, R.color.red))
+                    }
                 }
+
+
+
+
 
                 ivLostFoundDetailActionEdit.setOnClickListener {
                     val delcomLostFound = DelcomLostFound(

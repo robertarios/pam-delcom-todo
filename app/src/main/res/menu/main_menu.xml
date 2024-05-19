@@ -15,7 +15,7 @@
             app:showAsAction="never" />
         <item
             android:id="@+id/mainMenuAllData"
-            android:title="All Data"
+            android:title="Others Data"
             app:showAsAction="never" />
         <item
             android:id="@+id/mainMenuMyData"
